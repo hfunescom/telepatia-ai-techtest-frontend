@@ -33,6 +33,11 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  void _showSnack(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<PipelineProvider>();
@@ -143,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    "Seleccioná un archivo de audio (por ejemplo .ogg, .wav, .mp3). "
+                    "Seleccioná un archivo de audio (.ogg, .wav, .mp3, etc.). "
                     "Lo convertiremos a Base64 en el navegador y llamaremos al pipeline.",
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
@@ -157,15 +162,26 @@ class _HomeScreenState extends State<HomeScreen> {
                               provider.isLoading
                                   ? null
                                   : () async {
-                                    final picked = await pickSingleFileAsBase64(
-                                      accept: "audio/*",
-                                    );
-                                    if (picked != null) {
+                                    try {
+                                      // Acepta TODOS los formatos de audio
+                                      final picked = await pickSingleFileAsBase64(
+                                        accept: "audio/*",
+                                        // opcional: subí el límite si necesitas más (por defecto 15MB en util)
+                                      );
+                                      if (picked == null) {
+                                        // usuario canceló
+                                        return;
+                                      }
                                       setState(() {
                                         _pickedFileName = picked.filename;
                                         _pickedFileSize = picked.sizeBytes;
+                                        // IMPORTANTE: es solo el payload base64 (sin "data:...;base64,")
                                         _pickedFileB64 = picked.base64;
                                       });
+                                    } catch (e) {
+                                      _showSnack(
+                                        'No se pudo leer el archivo: $e',
+                                      );
                                     }
                                   },
                           icon: const Icon(Icons.upload_file),
@@ -232,17 +248,21 @@ class _HomeScreenState extends State<HomeScreen> {
                               ? null
                               : () async {
                                 FocusScope.of(context).unfocus();
-                                await context
-                                    .read<PipelineProvider>()
-                                    .runFromAudioBase64(
-                                      base64Audio: _pickedFileB64!,
-                                      filename: _pickedFileName!,
-                                      language: _language,
-                                      correlationId:
-                                          _corrController.text.trim().isEmpty
-                                              ? null
-                                              : _corrController.text.trim(),
-                                    );
+                                try {
+                                  await context
+                                      .read<PipelineProvider>()
+                                      .runFromAudioBase64(
+                                        base64Audio: _pickedFileB64!,
+                                        filename: _pickedFileName!,
+                                        language: _language,
+                                        correlationId:
+                                            _corrController.text.trim().isEmpty
+                                                ? null
+                                                : _corrController.text.trim(),
+                                      );
+                                } catch (e) {
+                                  _showSnack('No se pudo enviar el audio: $e');
+                                }
                               },
                       icon: const Icon(Icons.medical_information),
                       label:

@@ -1,84 +1,103 @@
 // lib/utils/web_file_picker.dart
-//
-// Utilidad solo para Flutter Web.
-// Abre el selector de archivos del navegador, lee el archivo como bytes
-// y devuelve su contenido en Base64 junto con metadata.
-//
-// Nota: Esto compila en Web. Si querés compatibilidad móvil/escritorio,
-// se puede agregar el package file_picker y un branch por plataforma.
-
+// File picker exclusivo para Flutter Web (usa dart:html).
 import 'dart:async';
-import 'dart:convert';
-import 'dart:typed_data';
-
-// ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html;
+import 'dart:math' as math;
 
+/// Resultado al elegir un archivo
 class PickedWebFile {
   final String filename;
-  final String mimeType;
   final int sizeBytes;
-  final String base64; // contenido del archivo en Base64, sin encabezados
+  final String base64; // SOLO el payload base64 (sin "data:...;base64,")
 
   PickedWebFile({
     required this.filename,
-    required this.mimeType,
     required this.sizeBytes,
     required this.base64,
   });
 }
 
-/// Abre un selector de archivo (único) y devuelve el archivo leído en Base64.
-/// [accept] es un string con el filtro MIME, por ejemplo: "audio/*".
+/// Lanza un <input type="file"> y devuelve el archivo como Base64 (sin prefijo).
+/// [accept] por ejemplo: "audio/*" o "audio/ogg".
+/// [maxBytes] para limitar tamaño (por defecto 15 MB).
 Future<PickedWebFile?> pickSingleFileAsBase64({
-  String accept = "audio/*",
+  String accept = '*/*',
+  int maxBytes = 15 * 1024 * 1024,
 }) async {
-  final input =
-      html.FileUploadInputElement()
-        ..accept = accept
-        ..multiple = false;
-
-  // Dispara el diálogo
-  input.click();
-
-  // Esperamos a que el usuario seleccione algo o cancele
-  await input.onChange.first;
-
-  final file = input.files?.isNotEmpty == true ? input.files!.first : null;
-  if (file == null) {
-    return null; // usuario canceló
-  }
-
-  final reader = html.FileReader();
   final completer = Completer<PickedWebFile?>();
+  try {
+    final input =
+        html.FileUploadInputElement()
+          ..accept = accept
+          ..multiple = false;
 
-  reader.onError.first.then((_) {
-    completer.completeError(StateError("No se pudo leer el archivo."));
-  });
+    input.click();
 
-  reader.onLoad.first.then((_) {
-    // Leímos como ArrayBuffer para obtener bytes puros
-    final result = reader.result;
-    if (result is ByteBuffer) {
-      final bytes = Uint8List.view(result);
-      final b64 = base64Encode(bytes);
-      completer.complete(
-        PickedWebFile(
-          filename: file.name,
-          mimeType: file.type ?? "application/octet-stream",
-          sizeBytes: file.size,
-          base64: b64,
-        ),
-      );
-    } else {
-      completer.completeError(
-        StateError("Formato de lectura inesperado. Se esperaba ByteBuffer."),
-      );
-    }
-  });
+    input.onChange.first.then((_) async {
+      if (input.files == null || input.files!.isEmpty) {
+        completer.complete(null);
+        return;
+      }
+      final file = input.files!.first;
 
-  // Iniciamos la lectura binaria
-  reader.readAsArrayBuffer(file);
+      final name = file.name ?? 'archivo';
+      final size = file.size ?? 0;
 
+      if (size <= 0) {
+        completer.completeError(StateError('El archivo está vacío.'));
+        return;
+      }
+      if (size > maxBytes) {
+        completer.completeError(
+          StateError(
+            'El archivo supera el máximo permitido (${_fmtBytes(maxBytes)}). Tamaño: ${_fmtBytes(size)}',
+          ),
+        );
+        return;
+      }
+
+      final reader = html.FileReader();
+      reader.readAsDataUrl(file);
+
+      reader.onError.first.then((_) {
+        if (!completer.isCompleted) {
+          completer.completeError(StateError('No se pudo leer el archivo.'));
+        }
+      });
+
+      reader.onLoad.first.then((_) {
+        try {
+          final result = reader.result?.toString() ?? '';
+          if (result.isEmpty || !result.contains(',')) {
+            throw StateError('Formato de DataURL inválido.');
+          }
+          final base64Payload = result.split(',').last.trim();
+          if (base64Payload.isEmpty) {
+            throw StateError('Payload base64 vacío.');
+          }
+          completer.complete(
+            PickedWebFile(
+              filename: name,
+              sizeBytes: size,
+              base64: base64Payload,
+            ),
+          );
+        } catch (e) {
+          if (!completer.isCompleted) completer.completeError(e);
+        }
+      });
+    });
+  } catch (e) {
+    if (!completer.isCompleted) completer.completeError(e);
+  }
   return completer.future;
+}
+
+String _fmtBytes(int bytes, [int decimals = 1]) {
+  if (bytes <= 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
+  final i = (math.log(bytes) / math.log(k)).floor();
+  final p = bytes / math.pow(k, i);
+  return "${p.toStringAsFixed(decimals)} ${sizes[i]}";
 }

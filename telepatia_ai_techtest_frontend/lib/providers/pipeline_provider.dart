@@ -47,6 +47,8 @@ class PipelineProvider extends ChangeNotifier {
         language: language,
         correlationId: correlationId,
       );
+      print("API keys -> ${res.keys.toList()}");
+      print("Diagnosis present? ${res['diagnosis'] != null}");
       _setSuccess(res);
     } catch (e) {
       _setError(e.toString());

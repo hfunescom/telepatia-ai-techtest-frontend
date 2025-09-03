@@ -40,7 +40,7 @@ class ApiClient {
     final uri = Uri.parse("$baseUrl/pipeline");
     final payload = <String, dynamic>{
       "input": {
-        "text": {"value": text},
+        "text": text,
         "language": language,
         if (correlationId != null) "correlationId": correlationId,
       },

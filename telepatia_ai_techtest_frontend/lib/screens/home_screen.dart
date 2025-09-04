@@ -43,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final provider = context.watch<PipelineProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Telepatía AI — Frontend')),
+      appBar: AppBar(title: const Text('Telepatía Medical Diagnose')),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 900),
@@ -164,10 +164,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   : () async {
                                     try {
                                       // Acepta TODOS los formatos de audio
-                                      final picked = await pickSingleFileAsBase64(
-                                        accept: "audio/*",
-                                        // opcional: subí el límite si necesitas más (por defecto 15MB en util)
-                                      );
+                                      final picked =
+                                          await pickSingleFileAsBase64(
+                                            accept: "audio/*",
+                                          );
                                       if (picked == null) {
                                         // usuario canceló
                                         return;
@@ -175,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       setState(() {
                                         _pickedFileName = picked.filename;
                                         _pickedFileSize = picked.sizeBytes;
-                                        // IMPORTANTE: es solo el payload base64 (sin "data:...;base64,")
+                                        // SOLO payload base64 (sin "data:...;base64,")
                                         _pickedFileB64 = picked.base64;
                                       });
                                     } catch (e) {
@@ -340,51 +340,59 @@ class _ResultBlock extends StatelessWidget {
     final timings =
         (data["pipeline"] is Map) ? data["pipeline"]["timingsMs"] : null;
 
+    final bold = Theme.of(
+      context,
+    ).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w700);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text("Resultado", style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),
 
-        if (timings != null)
+        // ======= BLOQUE UNIFICADO: Tiempos + Transcript + Extracted =======
+        if (timings != null || transcript != null || extracted != null) ...[
           Card(
             child: Padding(
               padding: const EdgeInsets.all(12.0),
-              child: SelectableText("Tiempos (ms):\n${pretty(timings)}"),
-            ),
-          ),
-
-        if (transcript != null) ...[
-          const SizedBox(height: 8),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: SelectableText("Transcript:\n${pretty(transcript)}"),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (timings != null) ...[
+                    SelectableText("Tiempos (ms):", style: bold),
+                    const SizedBox(height: 4),
+                    SelectableText(pretty(timings)),
+                    const SizedBox(height: 12),
+                  ],
+                  if (transcript != null) ...[
+                    SelectableText("Transcript:", style: bold),
+                    const SizedBox(height: 4),
+                    SelectableText(pretty(transcript)),
+                    const SizedBox(height: 12),
+                  ],
+                  if (extracted != null) ...[
+                    SelectableText("Extracted:", style: bold),
+                    const SizedBox(height: 4),
+                    SelectableText(pretty(extracted)),
+                  ],
+                ],
+              ),
             ),
           ),
         ],
 
-        if (extracted != null) ...[
-          const SizedBox(height: 8),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: SelectableText("Extracted:\n${pretty(extracted)}"),
-            ),
-          ),
-        ],
-
+        // ======= BLOQUE DIAGNÓSTICO =======
         if (diagnosis != null) ...[
           const SizedBox(height: 8),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(12.0),
-              child: _DiagnosisView(diagnosis: diagnosis, pretty: pretty),
+              child: _DiagnosisView(diagnosis: diagnosis),
             ),
           ),
         ],
 
-        // Fallback: si no hay campos conocidos, mostramos todo:
+        // Fallback: si no hay nada reconocible, mostramos todo:
         if (transcript == null && extracted == null && diagnosis == null) ...[
           const SizedBox(height: 8),
           Card(
@@ -401,8 +409,7 @@ class _ResultBlock extends StatelessWidget {
 
 class _DiagnosisView extends StatelessWidget {
   final Map<String, dynamic> diagnosis;
-  final String Function(Object?) pretty;
-  const _DiagnosisView({required this.diagnosis, required this.pretty});
+  const _DiagnosisView({required this.diagnosis});
 
   @override
   Widget build(BuildContext context) {
@@ -413,33 +420,49 @@ class _DiagnosisView extends StatelessWidget {
     final recommendations =
         (diagnosis["recommendations"] as List?)?.cast<dynamic>() ?? const [];
 
+    final bold = Theme.of(
+      context,
+    ).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w700);
+    final normal = Theme.of(context).textTheme.bodyMedium!;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text("Diagnóstico", style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
-        if (summary != null) SelectableText("Resumen: $summary"),
+
+        if (summary != null) ...[
+          SelectableText("Resumen", style: bold),
+          const SizedBox(height: 4),
+          SelectableText(summary, style: normal),
+          const SizedBox(height: 12),
+        ],
+
         if (severity != null) ...[
-          const SizedBox(height: 8),
-          SelectableText("Severidad: $severity"),
+          SelectableText("Severidad", style: bold),
+          const SizedBox(height: 4),
+          SelectableText(severity, style: normal),
+          const SizedBox(height: 12),
         ],
+
         if (differentials.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          const Text("Diferenciales:"),
+          SelectableText("Diferenciales", style: bold),
           const SizedBox(height: 4),
-          SelectableText(differentials.map((e) => "• $e").join("\n")),
+          SelectableText(
+            differentials.map((e) => "• $e").join("\n"),
+            style: normal,
+          ),
+          const SizedBox(height: 12),
         ],
+
         if (recommendations.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          const Text("Recomendaciones:"),
+          SelectableText("Recomendaciones", style: bold),
           const SizedBox(height: 4),
-          SelectableText(recommendations.map((e) => "• $e").join("\n")),
+          SelectableText(
+            recommendations.map((e) => "• $e").join("\n"),
+            style: normal,
+          ),
         ],
-        if (summary == null &&
-            severity == null &&
-            differentials.isEmpty &&
-            recommendations.isEmpty)
-          SelectableText("Diagnóstico (raw):\n${pretty(diagnosis)}"),
       ],
     );
   }

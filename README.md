@@ -1,34 +1,34 @@
 # Telepatía AI Tech Test Frontend
 
-Pequeña aplicación web en Flutter para interactuar con el pipeline de Telepatía AI.
+Small Flutter web application to interact with the Telepatía AI pipeline.
 
-## Requisitos
+## Requirements
 
-- [Flutter](https://flutter.dev) 3.7 o superior
-- Navegador Chrome
+- [Flutter](https://flutter.dev) 3.7 or higher
+- Chrome browser
 
-## Variables de entorno
+## Environment variables
 
-1. Copia el archivo de ejemplo y renómbralo:
+1. Copy the example file and rename it:
    ```bash
    cp telepatia_ai_techtest_frontend/.env.example telepatia_ai_techtest_frontend/.env
    ```
-2. Edita `telepatia_ai_techtest_frontend/.env` y completa los valores necesarios:
+2. Edit `telepatia_ai_techtest_frontend/.env` and fill in the required values:
    ```bash
    API_BASE_URL=http://127.0.0.1:5005/telepatia-ai-techtest-hfunes/us-central1
-   PROJECT_ID=<tu-project-id>
+   PROJECT_ID=<your-project-id>
    ```
-3. Carga las variables antes de ejecutar la app:
+3. Load the variables before running the app:
    ```bash
    cd telepatia_ai_techtest_frontend
    source .env
    ```
 
-## Ejecución local
+## Local run
 
-Dentro de la carpeta `telepatia_ai_techtest_frontend` ejecuta:
+Inside the `telepatia_ai_techtest_frontend` folder run:
 ```bash
 ./run-local.sh
 ```
-El script instalará dependencias y levantará la aplicación en Chrome.
+The script will install dependencies and launch the application in Chrome.
 

@@ -12,15 +12,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Estado para TEXT → pipeline
+  // State for TEXT → pipeline
   final _textController = TextEditingController(
     text:
-        "Me estoy sintiendo un poco mal, me duele la cabeza y tengo mucho moco.",
+        "I'm feeling a bit unwell; my head hurts and I have a lot of mucus.",
   );
 
-  // Estado para AUDIO → URL
+  // State for AUDIO → URL
   final _audioUrlController = TextEditingController();
-  String? _audioFilename; // opcional, lo podés inferir desde la URL
+  String? _audioFilename; // optional, you can infer it from the URL
 
   @override
   void dispose() {
@@ -102,13 +102,13 @@ class _HomeScreenState extends State<HomeScreen> {
           constraints: const BoxConstraints(maxWidth: 900),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            // Habilita selección de texto en toda la pantalla:
+            // Enable text selection on the entire screen:
             child: SelectionArea(
               child: ListView(
                 children: [
                   const SizedBox(height: 8),
                   Text(
-                    "Diagnóstico desde texto",
+                    "Diagnosis from text",
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 12),
@@ -117,8 +117,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     maxLines: 3,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
-                      labelText: 'Describe tus síntomas (texto)',
-                      hintText: 'Ej: Me duele la cabeza y tengo mucho moco...',
+                      labelText: 'Describe your symptoms (text)',
+                      hintText:
+                          'E.g., My head hurts and I have a lot of mucus...',
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -141,25 +142,25 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: const Icon(Icons.medical_services),
                       label:
                           provider.isLoading
-                              ? const Text("Procesando…")
-                              : const Text("Diagnosticar"),
+                              ? const Text("Processing…")
+                              : const Text("Diagnose"),
                     ),
                   ),
 
                   // ==========================
-                  // Sección: Diagnóstico desde AUDIO (URL)
+                  // Section: Diagnosis from AUDIO (URL)
                   // ==========================
                   const SizedBox(height: 28),
                   const Divider(),
                   const SizedBox(height: 8),
                   Text(
-                    "Diagnóstico desde audio (URL)",
+                    "Diagnosis from audio (URL)",
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    "Pegá el enlace público a tu audio (.ogg, .mp3, .wav, etc.). "
-                    "Usaremos la URL directa para transcribir y diagnosticar.",
+                    "Paste the public link to your audio (.ogg, .mp3, .wav, etc.). "
+                    "We'll use the direct URL to transcribe and diagnose.",
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 12),
@@ -168,17 +169,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     controller: _audioUrlController,
                     decoration: InputDecoration(
                       border: const OutlineInputBorder(),
-                      labelText: 'URL del audio',
-                      hintText: 'https://.../mi_audio.ogg',
+                      labelText: 'Audio URL',
+                      hintText: 'https://.../my_audio.ogg',
                       errorText:
                           audioUrl.isEmpty || isAudioUrlValid
                               ? null
-                              : 'Ingresá una URL válida (http/https).',
+                              : 'Enter a valid URL (http/https).',
                       suffixIcon:
                           audioUrl.isEmpty
                               ? null
                               : IconButton(
-                                tooltip: "Limpiar",
+                                tooltip: "Clear",
                                 onPressed:
                                     provider.isLoading
                                         ? null
@@ -202,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (_audioFilename != null) ...[
                     const SizedBox(height: 8),
                     Text(
-                      "Nombre inferido: ${_audioFilename!}",
+                      "Inferred name: ${_audioFilename!}",
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -229,14 +230,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                             provider.nextCorrelationId(),
                                       );
                                 } catch (e) {
-                                  _showSnack('No se pudo enviar el audio: $e');
+                                  _showSnack('Could not send audio: $e');
                                 }
                               },
                       icon: const Icon(Icons.link),
                       label:
                           provider.isLoading
-                              ? const Text("Procesando audio…")
-                              : const Text("Diagnosticar desde URL"),
+                              ? const Text("Processing audio…")
+                              : const Text("Diagnose from URL"),
                     ),
                   ),
 
@@ -255,7 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: Text(
-                          provider.errorMessage ?? "Error desconocido",
+                          provider.errorMessage ?? "Unknown error",
                           style: TextStyle(
                             color:
                                 Theme.of(context).colorScheme.onErrorContainer,
@@ -280,7 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Formatea bytes en B/KB/MB/GB.
+  /// Formats bytes into B/KB/MB/GB.
   String _formatBytes(int bytes, [int decimals = 1]) {
     if (bytes <= 0) return "0 B";
     const k = 1024;
@@ -299,10 +300,10 @@ class _ResultBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Campos esperados:
+    // Expected fields:
     final transcript = data["transcript"];
     final extracted = data["extracted"];
-    // Backend actual usa "diagnosis"; toleramos "diagnose" por compatibilidad:
+    // Current backend uses "diagnosis"; tolerate "diagnose" for compatibility:
     final diagnosis =
         (data["diagnosis"] ?? data["diagnose"]) as Map<String, dynamic>?;
     final timings =
@@ -318,7 +319,7 @@ class _ResultBlock extends StatelessWidget {
         Text("Diagnosis", style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),
 
-        // ======= BLOQUE DIAGNÓSTICO PRINCIPAL =======
+        // ======= MAIN DIAGNOSIS BLOCK =======
         if (diagnosis != null) ...[
           Card(
             child: Padding(
@@ -408,12 +409,12 @@ class _ResultBlock extends StatelessWidget {
             ),
           ),
 
-        // Fallback: si no hay nada reconocible, mostramos todo:
+        // Fallback: if there's nothing recognizable, show everything:
         if (transcript == null && extracted == null && diagnosis == null) ...[
           Card(
             child: Padding(
               padding: const EdgeInsets.all(12.0),
-              child: SelectableText("Respuesta completa:\n${pretty(data)}"),
+              child: SelectableText("Full response:\n${pretty(data)}"),
             ),
           ),
         ],
@@ -444,21 +445,21 @@ class _DiagnosisView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (summary != null) ...[
-          SelectableText("Resumen", style: bold),
+          SelectableText("Summary", style: bold),
           const SizedBox(height: 4),
           SelectableText(summary, style: normal),
           const SizedBox(height: 12),
         ],
 
         if (severity != null) ...[
-          SelectableText("Severidad", style: bold),
+          SelectableText("Severity", style: bold),
           const SizedBox(height: 4),
           SelectableText(severity, style: normal),
           const SizedBox(height: 12),
         ],
 
         if (differentials.isNotEmpty) ...[
-          SelectableText("Diferenciales", style: bold),
+          SelectableText("Differentials", style: bold),
           const SizedBox(height: 4),
           SelectableText(
             differentials.map((e) => "• $e").join("\n"),
@@ -468,7 +469,7 @@ class _DiagnosisView extends StatelessWidget {
         ],
 
         if (recommendations.isNotEmpty) ...[
-          SelectableText("Recomendaciones", style: bold),
+          SelectableText("Recommendations", style: bold),
           const SizedBox(height: 4),
           SelectableText(
             recommendations.map((e) => "• $e").join("\n"),

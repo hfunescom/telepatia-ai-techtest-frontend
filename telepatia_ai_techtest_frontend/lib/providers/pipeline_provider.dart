@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../api/client.dart';
 
-/// Estados simples del provider para manejar el ciclo de llamada.
+/// Simple provider states to manage the call lifecycle.
 enum PipelineStatus { idle, loading, success, error }
 
 class PipelineProvider extends ChangeNotifier {
@@ -13,7 +13,7 @@ class PipelineProvider extends ChangeNotifier {
   PipelineStatus _status = PipelineStatus.idle;
   String? _errorMessage;
 
-  /// Respuesta cruda del backend (la guardamos como Map para mostrarlo fácil en la UI).
+  /// Raw response from the backend (stored as a Map for easy display in the UI).
   Map<String, dynamic>? _lastResponse;
 
   PipelineProvider.local() : _api = ApiClient(baseUrl: ApiConfig.baseUrlLocal);
@@ -37,14 +37,14 @@ class PipelineProvider extends ChangeNotifier {
     return 'ui-corr-${_correlationCounter.toString().padLeft(3, '0')}';
   }
 
-  /// Llama al pipeline con texto plano.
+  /// Calls the pipeline with plain text.
   Future<void> runFromText({
     required String text,
     String language = "es-AR",
     String? correlationId,
   }) async {
     if (text.trim().isEmpty) {
-      _setError("El texto no puede estar vacío.");
+      _setError("Text cannot be empty.");
       return;
     }
     _setLoading();
@@ -54,7 +54,7 @@ class PipelineProvider extends ChangeNotifier {
         language: language,
         correlationId: correlationId,
       );
-      // Logs útiles en dev:
+      // Useful logs in dev:
       // print("API keys -> ${res.keys.toList()}");
       // print("Diagnosis present? ${res['diagnosis'] != null}");
       _setSuccess(res);
@@ -63,7 +63,7 @@ class PipelineProvider extends ChangeNotifier {
     }
   }
 
-  /// Llama al pipeline con audio base64 (UI opcional).
+  /// Calls the pipeline with base64 audio (optional UI).
   Future<void> runFromAudioBase64({
     required String base64Audio,
     required String filename,
@@ -71,11 +71,11 @@ class PipelineProvider extends ChangeNotifier {
     String? correlationId,
   }) async {
     if (base64Audio.trim().isEmpty) {
-      _setError("El audio base64 no puede estar vacío.");
+      _setError("Base64 audio cannot be empty.");
       return;
     }
     if (filename.trim().isEmpty) {
-      _setError("El filename no puede estar vacío.");
+      _setError("Filename cannot be empty.");
       return;
     }
     _setLoading();
@@ -92,7 +92,7 @@ class PipelineProvider extends ChangeNotifier {
     }
   }
 
-  /// NUEVO: Llama al pipeline con audio por URL pública (mp3/ogg/wav, etc.)
+  /// NEW: Calls the pipeline with audio via public URL (mp3/ogg/wav, etc.)
   Future<void> runFromAudioUrl({
     required String url,
     String? filename,
@@ -100,7 +100,7 @@ class PipelineProvider extends ChangeNotifier {
     String? correlationId,
   }) async {
     if (url.trim().isEmpty) {
-      _setError("La URL no puede estar vacía.");
+      _setError("URL cannot be empty.");
       return;
     }
     _setLoading();
@@ -117,7 +117,7 @@ class PipelineProvider extends ChangeNotifier {
     }
   }
 
-  /// Helper para formatear cualquier Map/JSON bonito en la UI.
+  /// Helper to pretty-format any Map/JSON in the UI.
   String prettyJson([Object? data]) {
     try {
       if (data == null) return "{}";

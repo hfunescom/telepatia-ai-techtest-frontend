@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/pipeline_provider.dart';
-import '../utils/web_file_picker.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,15 +20,15 @@ class _HomeScreenState extends State<HomeScreen> {
   final _corrController = TextEditingController(text: "ui-corr-001");
   String _language = "es-AR";
 
-  // Estado para AUDIO → pipeline
-  String? _pickedFileName;
-  int? _pickedFileSize;
-  String? _pickedFileB64;
+  // Estado para AUDIO → URL
+  final _audioUrlController = TextEditingController();
+  String? _audioFilename; // opcional, lo podés inferir desde la URL
 
   @override
   void dispose() {
     _textController.dispose();
     _corrController.dispose();
+    _audioUrlController.dispose();
     super.dispose();
   }
 
@@ -38,12 +37,34 @@ class _HomeScreenState extends State<HomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
+  bool _isValidUrl(String s) {
+    if (s.trim().isEmpty) return false;
+    final uri = Uri.tryParse(s.trim());
+    if (uri == null) return false;
+    if (!(uri.isScheme("http") || uri.isScheme("https"))) return false;
+    return uri.host.isNotEmpty;
+  }
+
+  String? _inferFilenameFromUrl(String url) {
+    try {
+      final u = Uri.parse(url);
+      final path = u.path;
+      if (path.isEmpty || path == "/") return null;
+      final name = path.split("/").last;
+      return name.isEmpty ? null : name;
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<PipelineProvider>();
+    final audioUrl = _audioUrlController.text.trim();
+    final isAudioUrlValid = _isValidUrl(audioUrl);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Telepatía Medical Diagnose')),
+      appBar: AppBar(title: const Text('Telepatía AI — Frontend')),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 900),
@@ -137,123 +158,81 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
 
                   // ==========================
-                  // Sección: Diagnóstico desde AUDIO
+                  // Sección: Diagnóstico desde AUDIO (URL)
                   // ==========================
                   const SizedBox(height: 28),
                   const Divider(),
                   const SizedBox(height: 8),
                   Text(
-                    "Diagnóstico desde audio",
+                    "Diagnóstico desde audio (URL)",
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    "Seleccioná un archivo de audio (.ogg, .wav, .mp3, etc.). "
-                    "Lo convertiremos a Base64 en el navegador y llamaremos al pipeline.",
+                    "Pegá el enlace público a tu audio (.ogg, .mp3, .wav, etc.). "
+                    "Usaremos la URL directa para transcribir y diagnosticar.",
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 12),
 
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed:
-                              provider.isLoading
-                                  ? null
-                                  : () async {
-                                    try {
-                                      // Acepta TODOS los formatos de audio
-                                      final picked =
-                                          await pickSingleFileAsBase64(
-                                            accept: "audio/*",
-                                          );
-                                      if (picked == null) {
-                                        // usuario canceló
-                                        return;
-                                      }
-                                      setState(() {
-                                        _pickedFileName = picked.filename;
-                                        _pickedFileSize = picked.sizeBytes;
-                                        // SOLO payload base64 (sin "data:...;base64,")
-                                        _pickedFileB64 = picked.base64;
-                                      });
-                                    } catch (e) {
-                                      _showSnack(
-                                        'No se pudo leer el archivo: $e',
-                                      );
-                                    }
-                                  },
-                          icon: const Icon(Icons.upload_file),
-                          label: const Text("Elegir audio"),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-
-                  if (_pickedFileName != null)
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.audiotrack),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _pickedFileName!,
-                                    style:
-                                        Theme.of(context).textTheme.titleSmall,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    "Tamaño: ${_formatBytes(_pickedFileSize ?? 0)}",
-                                    style:
-                                        Theme.of(context).textTheme.bodySmall,
-                                  ),
-                                ],
+                  TextField(
+                    controller: _audioUrlController,
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: 'URL del audio',
+                      hintText: 'https://.../mi_audio.ogg',
+                      errorText:
+                          audioUrl.isEmpty || isAudioUrlValid
+                              ? null
+                              : 'Ingresá una URL válida (http/https).',
+                      suffixIcon:
+                          audioUrl.isEmpty
+                              ? null
+                              : IconButton(
+                                tooltip: "Limpiar",
+                                onPressed:
+                                    provider.isLoading
+                                        ? null
+                                        : () {
+                                          setState(() {
+                                            _audioUrlController.clear();
+                                            _audioFilename = null;
+                                          });
+                                        },
+                                icon: const Icon(Icons.clear),
                               ),
-                            ),
-                            IconButton(
-                              tooltip: "Quitar archivo",
-                              onPressed:
-                                  provider.isLoading
-                                      ? null
-                                      : () {
-                                        setState(() {
-                                          _pickedFileName = null;
-                                          _pickedFileSize = null;
-                                          _pickedFileB64 = null;
-                                        });
-                                      },
-                              icon: const Icon(Icons.clear),
-                            ),
-                          ],
-                        ),
-                      ),
                     ),
+                    onChanged: (_) {
+                      final inferred = _inferFilenameFromUrl(
+                        _audioUrlController.text,
+                      );
+                      setState(() => _audioFilename = inferred);
+                    },
+                  ),
 
-                  const SizedBox(height: 8),
+                  if (_audioFilename != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      "Nombre inferido: ${_audioFilename!}",
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+
+                  const SizedBox(height: 12),
                   SizedBox(
                     height: 48,
                     child: ElevatedButton.icon(
                       onPressed:
-                          provider.isLoading ||
-                                  _pickedFileB64 == null ||
-                                  _pickedFileName == null
+                          provider.isLoading || !isAudioUrlValid
                               ? null
                               : () async {
                                 FocusScope.of(context).unfocus();
                                 try {
                                   await context
                                       .read<PipelineProvider>()
-                                      .runFromAudioBase64(
-                                        base64Audio: _pickedFileB64!,
-                                        filename: _pickedFileName!,
+                                      .runFromAudioUrl(
+                                        url: audioUrl,
+                                        filename: _audioFilename,
                                         language: _language,
                                         correlationId:
                                             _corrController.text.trim().isEmpty
@@ -264,11 +243,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                   _showSnack('No se pudo enviar el audio: $e');
                                 }
                               },
-                      icon: const Icon(Icons.medical_information),
+                      icon: const Icon(Icons.link),
                       label:
                           provider.isLoading
                               ? const Text("Procesando audio…")
-                              : const Text("Diagnosticar audio"),
+                              : const Text("Diagnosticar desde URL"),
                     ),
                   ),
 

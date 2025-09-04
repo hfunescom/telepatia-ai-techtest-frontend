@@ -47,15 +47,16 @@ class PipelineProvider extends ChangeNotifier {
         language: language,
         correlationId: correlationId,
       );
-      print("API keys -> ${res.keys.toList()}");
-      print("Diagnosis present? ${res['diagnosis'] != null}");
+      // Logs útiles en dev:
+      // print("API keys -> ${res.keys.toList()}");
+      // print("Diagnosis present? ${res['diagnosis'] != null}");
       _setSuccess(res);
     } catch (e) {
       _setError(e.toString());
     }
   }
 
-  /// Llama al pipeline con audio base64 (para implementar luego en la UI).
+  /// Llama al pipeline con audio base64 (UI opcional).
   Future<void> runFromAudioBase64({
     required String base64Audio,
     required String filename,
@@ -74,6 +75,31 @@ class PipelineProvider extends ChangeNotifier {
     try {
       final res = await _api.pipelineFromAudioBase64(
         base64Audio: base64Audio,
+        filename: filename,
+        language: language,
+        correlationId: correlationId,
+      );
+      _setSuccess(res);
+    } catch (e) {
+      _setError(e.toString());
+    }
+  }
+
+  /// NUEVO: Llama al pipeline con audio por URL pública (mp3/ogg/wav, etc.)
+  Future<void> runFromAudioUrl({
+    required String url,
+    String? filename,
+    String language = "es-AR",
+    String? correlationId,
+  }) async {
+    if (url.trim().isEmpty) {
+      _setError("La URL no puede estar vacía.");
+      return;
+    }
+    _setLoading();
+    try {
+      final res = await _api.pipelineFromAudioUrl(
+        url: url.trim(),
         filename: filename,
         language: language,
         correlationId: correlationId,

@@ -22,12 +22,11 @@ class ApiClient {
 
   /// Llama al pipeline con texto plano.
   ///
-  /// Contrato esperado (según lo que definimos en backend):
   /// POST {baseUrl}/pipeline
   /// body:
   /// {
   ///   "input": {
-  ///     "text": {"type": "plain", "value": "<texto>"},
+  ///     "text": "<texto>",
   ///     "language": "es-AR",
   ///     "correlationId": "opcional"
   ///   }
@@ -66,7 +65,8 @@ class ApiClient {
 
   /// Llama al pipeline con audio codificado en Base64.
   ///
-  /// Ejemplo de body que ya probaste desde curl:
+  /// POST {baseUrl}/pipeline
+  /// body:
   /// {
   ///   "input": {
   ///     "audio": {"type": "base64", "value": "<B64>"},
@@ -101,6 +101,52 @@ class ApiClient {
       throw ApiException(
         message:
             "Error ${res.statusCode} al llamar pipelineFromAudioBase64: ${res.body}",
+        statusCode: res.statusCode,
+        body: res.body,
+      );
+    }
+
+    return _decodeJson(res.body);
+  }
+
+  /// NUEVO: Llama al pipeline con audio por URL pública (mp3/ogg/wav, etc.)
+  ///
+  /// POST {baseUrl}/pipeline
+  /// body:
+  /// {
+  ///   "input": {
+  ///     "audio": {"type": "url", "value": "<URL>"},
+  ///     "filename": "opcional",
+  ///     "language": "es-AR",
+  ///     "correlationId": "opcional"
+  ///   }
+  /// }
+  Future<Map<String, dynamic>> pipelineFromAudioUrl({
+    required String url,
+    String? filename,
+    String language = "es-AR",
+    String? correlationId,
+  }) async {
+    final uri = Uri.parse("$baseUrl/pipeline");
+    final payload = <String, dynamic>{
+      "input": {
+        "audio": {"type": "url", "value": url},
+        if (filename != null) "filename": filename,
+        "language": language,
+        if (correlationId != null) "correlationId": correlationId,
+      },
+    };
+
+    final res = await _http.post(
+      uri,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(payload),
+    );
+
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw ApiException(
+        message:
+            "Error ${res.statusCode} al llamar pipelineFromAudioUrl: ${res.body}",
         statusCode: res.statusCode,
         body: res.body,
       );

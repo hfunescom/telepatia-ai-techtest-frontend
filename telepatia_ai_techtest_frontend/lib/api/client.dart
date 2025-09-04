@@ -1,18 +1,18 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-/// Configuración de endpoints del backend (Firebase Functions v2).
+/// Configuration for backend endpoints (Firebase Functions v2).
 class ApiConfig {
-  /// URL base local del emulador (ajustada a lo que usaste en backend).
+  /// Local base URL for the emulator (adjust to match your backend).
   static const String baseUrlLocal =
       "http://127.0.0.1:5005/telepatia-ai-techtest-hfunes/us-central1";
 
-  /// URL base en producción (reemplaza <tu-proyecto> por tu GCP projectId).
+  /// Production base URL (replace <your-project> with your GCP projectId).
   static const String baseUrlProd =
-      "https://us-central1-<tu-proyecto>.cloudfunctions.net";
+      "https://us-central1-<your-project>.cloudfunctions.net";
 }
 
-/// Cliente HTTP simple para hablar con el pipeline del backend.
+/// Simple HTTP client to communicate with the backend pipeline.
 class ApiClient {
   final String baseUrl;
   final http.Client _http;
@@ -20,15 +20,15 @@ class ApiClient {
   ApiClient({required this.baseUrl, http.Client? httpClient})
     : _http = httpClient ?? http.Client();
 
-  /// Llama al pipeline con texto plano.
+  /// Calls the pipeline with plain text.
   ///
   /// POST {baseUrl}/pipeline
   /// body:
   /// {
   ///   "input": {
-  ///     "text": "<texto>",
+  ///     "text": "<text>",
   ///     "language": "es-AR",
-  ///     "correlationId": "opcional"
+  ///     "correlationId": "optional"
   ///   }
   /// }
   Future<Map<String, dynamic>> pipelineFromText({
@@ -54,7 +54,7 @@ class ApiClient {
     if (res.statusCode < 200 || res.statusCode >= 300) {
       throw ApiException(
         message:
-            "Error ${res.statusCode} al llamar pipelineFromText: ${res.body}",
+            "Error ${res.statusCode} calling pipelineFromText: ${res.body}",
         statusCode: res.statusCode,
         body: res.body,
       );
@@ -63,16 +63,16 @@ class ApiClient {
     return _decodeJson(res.body);
   }
 
-  /// Llama al pipeline con audio codificado en Base64.
+  /// Calls the pipeline with audio encoded in Base64.
   ///
   /// POST {baseUrl}/pipeline
   /// body:
   /// {
   ///   "input": {
   ///     "audio": {"type": "base64", "value": "<B64>"},
-  ///     "filename": "archivo.ogg",
+  ///     "filename": "file.ogg",
   ///     "language": "es-AR",
-  ///     "correlationId": "opcional"
+  ///     "correlationId": "optional"
   ///   }
   /// }
   Future<Map<String, dynamic>> pipelineFromAudioBase64({
@@ -100,7 +100,7 @@ class ApiClient {
     if (res.statusCode < 200 || res.statusCode >= 300) {
       throw ApiException(
         message:
-            "Error ${res.statusCode} al llamar pipelineFromAudioBase64: ${res.body}",
+            "Error ${res.statusCode} calling pipelineFromAudioBase64: ${res.body}",
         statusCode: res.statusCode,
         body: res.body,
       );
@@ -109,16 +109,16 @@ class ApiClient {
     return _decodeJson(res.body);
   }
 
-  /// NUEVO: Llama al pipeline con audio por URL pública (mp3/ogg/wav, etc.)
+  /// NEW: Calls the pipeline with audio via public URL (mp3/ogg/wav, etc.)
   ///
   /// POST {baseUrl}/pipeline
   /// body:
   /// {
   ///   "input": {
   ///     "audio": {"type": "url", "value": "<URL>"},
-  ///     "filename": "opcional",
+  ///     "filename": "optional",
   ///     "language": "es-AR",
-  ///     "correlationId": "opcional"
+  ///     "correlationId": "optional"
   ///   }
   /// }
   Future<Map<String, dynamic>> pipelineFromAudioUrl({
@@ -146,7 +146,7 @@ class ApiClient {
     if (res.statusCode < 200 || res.statusCode >= 300) {
       throw ApiException(
         message:
-            "Error ${res.statusCode} al llamar pipelineFromAudioUrl: ${res.body}",
+            "Error ${res.statusCode} calling pipelineFromAudioUrl: ${res.body}",
         statusCode: res.statusCode,
         body: res.body,
       );
@@ -155,7 +155,7 @@ class ApiClient {
     return _decodeJson(res.body);
   }
 
-  /// Cierra el cliente HTTP (usá esto si creás/descartás instancias dinámicamente).
+  /// Closes the HTTP client (use this if you create/discard instances dynamically).
   void dispose() {
     _http.close();
   }
@@ -166,14 +166,14 @@ class ApiClient {
       return decoded;
     }
     throw ApiException(
-      message: "Respuesta inesperada del servidor (no es JSON objeto).",
+      message: "Unexpected server response (not a JSON object).",
       statusCode: 200,
       body: body,
     );
   }
 }
 
-/// Excepción simple para errores de API.
+/// Simple exception for API errors.
 class ApiException implements Exception {
   final String message;
   final int? statusCode;

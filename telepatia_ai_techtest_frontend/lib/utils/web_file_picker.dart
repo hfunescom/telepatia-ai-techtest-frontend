@@ -1,14 +1,14 @@
 // lib/utils/web_file_picker.dart
-// File picker exclusivo para Flutter Web (usa dart:html).
+// File picker exclusive to Flutter Web (uses dart:html).
 import 'dart:async';
 import 'dart:html' as html;
 import 'dart:math' as math;
 
-/// Resultado al elegir un archivo
+/// Result when picking a file
 class PickedWebFile {
   final String filename;
   final int sizeBytes;
-  final String base64; // SOLO el payload base64 (sin "data:...;base64,")
+  final String base64; // ONLY the base64 payload (without "data:...;base64,")
 
   PickedWebFile({
     required this.filename,
@@ -17,9 +17,9 @@ class PickedWebFile {
   });
 }
 
-/// Lanza un <input type="file"> y devuelve el archivo como Base64 (sin prefijo).
-/// [accept] por ejemplo: "audio/*" o "audio/ogg".
-/// [maxBytes] para limitar tamaño (por defecto 15 MB).
+/// Opens an <input type="file"> and returns the file as Base64 (without prefix).
+/// [accept] e.g. "audio/*" or "audio/ogg".
+/// [maxBytes] to limit size (default 15 MB).
 Future<PickedWebFile?> pickSingleFileAsBase64({
   String accept = '*/*',
   int maxBytes = 15 * 1024 * 1024,
@@ -40,17 +40,17 @@ Future<PickedWebFile?> pickSingleFileAsBase64({
       }
       final file = input.files!.first;
 
-      final name = file.name ?? 'archivo';
+      final name = file.name ?? 'file';
       final size = file.size ?? 0;
 
       if (size <= 0) {
-        completer.completeError(StateError('El archivo está vacío.'));
+        completer.completeError(StateError('The file is empty.'));
         return;
       }
       if (size > maxBytes) {
         completer.completeError(
           StateError(
-            'El archivo supera el máximo permitido (${_fmtBytes(maxBytes)}). Tamaño: ${_fmtBytes(size)}',
+            'The file exceeds the maximum allowed (${_fmtBytes(maxBytes)}). Size: ${_fmtBytes(size)}',
           ),
         );
         return;
@@ -61,7 +61,7 @@ Future<PickedWebFile?> pickSingleFileAsBase64({
 
       reader.onError.first.then((_) {
         if (!completer.isCompleted) {
-          completer.completeError(StateError('No se pudo leer el archivo.'));
+          completer.completeError(StateError('Could not read the file.'));
         }
       });
 
@@ -69,11 +69,11 @@ Future<PickedWebFile?> pickSingleFileAsBase64({
         try {
           final result = reader.result?.toString() ?? '';
           if (result.isEmpty || !result.contains(',')) {
-            throw StateError('Formato de DataURL inválido.');
+            throw StateError('Invalid DataURL format.');
           }
           final base64Payload = result.split(',').last.trim();
           if (base64Payload.isEmpty) {
-            throw StateError('Payload base64 vacío.');
+            throw StateError('Empty base64 payload.');
           }
           completer.complete(
             PickedWebFile(

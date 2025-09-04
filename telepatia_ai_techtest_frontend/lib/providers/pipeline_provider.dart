@@ -8,6 +8,8 @@ enum PipelineStatus { idle, loading, success, error }
 class PipelineProvider extends ChangeNotifier {
   final ApiClient _api;
 
+  int _correlationCounter = 0;
+
   PipelineStatus _status = PipelineStatus.idle;
   String? _errorMessage;
 
@@ -29,6 +31,11 @@ class PipelineProvider extends ChangeNotifier {
   bool get isLoading => _status == PipelineStatus.loading;
   bool get isSuccess => _status == PipelineStatus.success;
   bool get isError => _status == PipelineStatus.error;
+
+  String nextCorrelationId() {
+    _correlationCounter++;
+    return 'ui-corr-${_correlationCounter.toString().padLeft(3, '0')}';
+  }
 
   /// Llama al pipeline con texto plano.
   Future<void> runFromText({

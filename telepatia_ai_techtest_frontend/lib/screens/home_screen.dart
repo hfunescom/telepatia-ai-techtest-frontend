@@ -17,8 +17,6 @@ class _HomeScreenState extends State<HomeScreen> {
     text:
         "Me estoy sintiendo un poco mal, me duele la cabeza y tengo mucho moco.",
   );
-  final _corrController = TextEditingController(text: "ui-corr-001");
-  String _language = "es-AR";
 
   // Estado para AUDIO → URL
   final _audioUrlController = TextEditingController();
@@ -27,7 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _textController.dispose();
-    _corrController.dispose();
     _audioUrlController.dispose();
     super.dispose();
   }
@@ -55,6 +52,30 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (_) {
       return null;
     }
+  }
+
+  String _detectLanguage(String text) {
+    final lower = text.toLowerCase();
+    if (RegExp(r'[áéíóúñ]').hasMatch(lower)) return 'es-AR';
+    final words = lower.split(RegExp(r'\s+'));
+    const spanishWords = {
+      'el',
+      'la',
+      'de',
+      'que',
+      'y',
+      'los',
+      'las',
+      'un',
+      'una',
+      'tengo'
+    };
+    const englishWords = {'the', 'and', 'is', 'are', 'to', 'have'};
+    final spanishCount =
+        words.where((w) => spanishWords.contains(w)).length;
+    final englishCount =
+        words.where((w) => englishWords.contains(w)).length;
+    return spanishCount >= englishCount ? 'es-AR' : 'en';
   }
 
   @override
@@ -90,46 +111,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          value: _language,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: "Idioma",
-                          ),
-                          items: const [
-                            DropdownMenuItem(
-                              value: "es-AR",
-                              child: Text("Español (AR)"),
-                            ),
-                            DropdownMenuItem(
-                              value: "es",
-                              child: Text("Español"),
-                            ),
-                            DropdownMenuItem(
-                              value: "en",
-                              child: Text("Inglés"),
-                            ),
-                          ],
-                          onChanged:
-                              (v) => setState(() => _language = v ?? "es-AR"),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextField(
-                          controller: _corrController,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'Correlation ID (opcional)',
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
                   SizedBox(
                     height: 48,
                     child: ElevatedButton.icon(
@@ -138,16 +119,13 @@ class _HomeScreenState extends State<HomeScreen> {
                               ? null
                               : () async {
                                 FocusScope.of(context).unfocus();
-                                await context
-                                    .read<PipelineProvider>()
-                                    .runFromText(
-                                      text: _textController.text,
-                                      language: _language,
-                                      correlationId:
-                                          _corrController.text.trim().isEmpty
-                                              ? null
-                                              : _corrController.text.trim(),
-                                    );
+                                final p = context.read<PipelineProvider>();
+                                await p.runFromText(
+                                  text: _textController.text,
+                                  language:
+                                      _detectLanguage(_textController.text),
+                                  correlationId: p.nextCorrelationId(),
+                                );
                               },
                       icon: const Icon(Icons.medical_services),
                       label:
@@ -233,11 +211,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                       .runFromAudioUrl(
                                         url: audioUrl,
                                         filename: _audioFilename,
-                                        language: _language,
+                                        language: _detectLanguage(
+                                          _textController.text,
+                                        ),
                                         correlationId:
-                                            _corrController.text.trim().isEmpty
-                                                ? null
-                                                : _corrController.text.trim(),
+                                            provider.nextCorrelationId(),
                                       );
                                 } catch (e) {
                                   _showSnack('No se pudo enviar el audio: $e');

@@ -85,7 +85,18 @@ class _HomeScreenState extends State<HomeScreen> {
     final isAudioUrlValid = _isValidUrl(audioUrl);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Telepatía AI — Frontend')),
+      appBar: AppBar(
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/images/telepatia_logo.png',
+              height: 32,
+            ),
+            const SizedBox(width: 8),
+            const Text('Doctor Helper'),
+          ],
+        ),
+      ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 900),
@@ -307,51 +318,86 @@ class _ResultBlock extends StatelessWidget {
         Text("Resultado", style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),
 
-        // ======= BLOQUE UNIFICADO: Tiempos + Transcript + Extracted =======
-        if (timings != null || transcript != null || extracted != null) ...[
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (timings != null) ...[
-                    SelectableText("Tiempos (ms):", style: bold),
-                    const SizedBox(height: 4),
-                    SelectableText(pretty(timings)),
-                    const SizedBox(height: 12),
-                  ],
-                  if (transcript != null) ...[
-                    SelectableText("Transcript:", style: bold),
-                    const SizedBox(height: 4),
-                    SelectableText(pretty(transcript)),
-                    const SizedBox(height: 12),
-                  ],
-                  if (extracted != null) ...[
-                    SelectableText("Extracted:", style: bold),
-                    const SizedBox(height: 4),
-                    SelectableText(pretty(extracted)),
-                  ],
-                ],
-              ),
-            ),
-          ),
-        ],
-
-        // ======= BLOQUE DIAGNÓSTICO =======
+        // ======= BLOQUE DIAGNÓSTICO PRINCIPAL =======
         if (diagnosis != null) ...[
-          const SizedBox(height: 8),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(12.0),
               child: _DiagnosisView(diagnosis: diagnosis),
             ),
           ),
+          const SizedBox(height: 8),
         ],
+
+        // ======= BLOQUES SECUNDARIOS: Tiempos / Transcript / Extracted =======
+        if (timings != null || transcript != null || extracted != null)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 600;
+              final itemWidth =
+                  isWide ? (constraints.maxWidth - 24) / 3 : constraints.maxWidth;
+              return Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  if (timings != null)
+                    SizedBox(
+                      width: itemWidth,
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SelectableText("Tiempos (ms):", style: bold),
+                              const SizedBox(height: 4),
+                              SelectableText(pretty(timings)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (transcript != null)
+                    SizedBox(
+                      width: itemWidth,
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SelectableText("Transcript:", style: bold),
+                              const SizedBox(height: 4),
+                              SelectableText(pretty(transcript)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (extracted != null)
+                    SizedBox(
+                      width: itemWidth,
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SelectableText("Extracted:", style: bold),
+                              const SizedBox(height: 4),
+                              SelectableText(pretty(extracted)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
 
         // Fallback: si no hay nada reconocible, mostramos todo:
         if (transcript == null && extracted == null && diagnosis == null) ...[
-          const SizedBox(height: 8),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(12.0),

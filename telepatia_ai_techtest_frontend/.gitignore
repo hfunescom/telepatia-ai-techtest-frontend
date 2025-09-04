@@ -1,4 +1,6 @@
 # Miscellaneous
+# Environment variables
+.env
 *.class
 *.log
 *.pyc
@@ -47,3 +49,4 @@ app.*.map.json
 /windows/
 /web/
 /build
+

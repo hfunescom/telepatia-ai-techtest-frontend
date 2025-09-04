@@ -315,7 +315,7 @@ class _ResultBlock extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Resultado", style: Theme.of(context).textTheme.titleLarge),
+        Text("Diagnosis", style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),
 
         // ======= BLOQUE DIAGNÓSTICO PRINCIPAL =======
@@ -329,71 +329,83 @@ class _ResultBlock extends StatelessWidget {
           const SizedBox(height: 8),
         ],
 
-        // ======= BLOQUES SECUNDARIOS: Tiempos / Transcript / Extracted =======
+        // ======= METRICS: Timing / Transcript / Extracted =======
         if (timings != null || transcript != null || extracted != null)
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= 600;
-              final itemWidth =
-                  isWide ? (constraints.maxWidth - 24) / 3 : constraints.maxWidth;
-              return Wrap(
-                spacing: 12,
-                runSpacing: 12,
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (timings != null)
-                    SizedBox(
-                      width: itemWidth,
-                      child: Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SelectableText("Tiempos (ms):", style: bold),
-                              const SizedBox(height: 4),
-                              SelectableText(pretty(timings)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  if (transcript != null)
-                    SizedBox(
-                      width: itemWidth,
-                      child: Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SelectableText("Transcript:", style: bold),
-                              const SizedBox(height: 4),
-                              SelectableText(pretty(transcript)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  if (extracted != null)
-                    SizedBox(
-                      width: itemWidth,
-                      child: Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SelectableText("Extracted:", style: bold),
-                              const SizedBox(height: 4),
-                              SelectableText(pretty(extracted)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
+                  Text("Metrics", style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isWide = constraints.maxWidth >= 600;
+                      final itemWidth =
+                          isWide ? (constraints.maxWidth - 24) / 3 : constraints.maxWidth;
+                      return Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: [
+                          if (timings != null)
+                            SizedBox(
+                              width: itemWidth,
+                              child: Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      SelectableText("Timing (ms):", style: bold),
+                                      const SizedBox(height: 4),
+                                      SelectableText(pretty(timings)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          if (transcript != null)
+                            SizedBox(
+                              width: itemWidth,
+                              child: Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      SelectableText("Transcript:", style: bold),
+                                      const SizedBox(height: 4),
+                                      SelectableText(pretty(transcript)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          if (extracted != null)
+                            SizedBox(
+                              width: itemWidth,
+                              child: Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      SelectableText("Extracted:", style: bold),
+                                      const SizedBox(height: 4),
+                                      SelectableText(pretty(extracted)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
                 ],
-              );
-            },
+              ),
+            ),
           ),
 
         // Fallback: si no hay nada reconocible, mostramos todo:
@@ -431,9 +443,6 @@ class _DiagnosisView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Diagnóstico", style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
-
         if (summary != null) ...[
           SelectableText("Resumen", style: bold),
           const SizedBox(height: 4),

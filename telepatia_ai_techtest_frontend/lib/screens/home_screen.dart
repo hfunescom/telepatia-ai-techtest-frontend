@@ -13,9 +13,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _inputController = TextEditingController(
-    text: "I'm feeling a bit unwell; my head hurts and I have a lot of mucus.",
-  );
+  final _inputController = TextEditingController();
 
   String? _audioFilename;
 
@@ -109,12 +107,26 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Text(
                             "Diagnosis",
-                            style: Theme.of(context).textTheme.titleLarge,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge!
+                                .copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                           const SizedBox(height: 12),
                           Text(
                             "Describe your symptoms or paste an audio URL (.ogg, .mp3, .wav...) and we'll transcribe and diagnose",
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium!
+                                .copyWith(color: Colors.white),
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Symptoms or Audio URL',
+                            style: TextStyle(color: Colors.white),
                           ),
                           const SizedBox(height: 12),
                           TextField(
@@ -122,7 +134,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             maxLines: 3,
                             decoration: InputDecoration(
                               border: const OutlineInputBorder(),
-                              labelText: 'Symptoms or audio URL',
                               hintText:
                                   'E.g., My head hurts and I have a lot of mucus... or https://.../my_audio.ogg',
                               errorText: input.isEmpty || !looksLikeUrl || isUrl
@@ -142,6 +153,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                             },
                                       icon: const Icon(Icons.clear),
                                     ),
+                              filled: true,
+                              fillColor: Colors.white,
                             ),
                             onChanged: (_) {
                               final inferred =
@@ -160,6 +173,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           SizedBox(
                             height: 48,
                             child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFE5E6F7),
+                                foregroundColor: const Color(0xFF6884F3),
+                              ),
                               onPressed: provider.isLoading || input.isEmpty
                                   ? null
                                   : () async {
@@ -293,7 +310,13 @@ class _ResultBlock extends StatelessWidget {
                 children: [
                   Text(
                     "Results",
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge!
+                        .copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 8),
                   _DiagnosisView(diagnosis: diagnosis),
@@ -314,7 +337,13 @@ class _ResultBlock extends StatelessWidget {
                 children: [
                   Text(
                     "Metrics",
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge!
+                        .copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 8),
                   LayoutBuilder(
@@ -339,7 +368,7 @@ class _ResultBlock extends StatelessWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       SelectableText(
-                                        "Timing (ms):",
+                                        "Timing (ms)",
                                         style: bold,
                                       ),
                                       const SizedBox(height: 4),
@@ -361,7 +390,7 @@ class _ResultBlock extends StatelessWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       SelectableText(
-                                        "Transcript:",
+                                        "Transcript",
                                         style: bold,
                                       ),
                                       const SizedBox(height: 4),
@@ -382,7 +411,7 @@ class _ResultBlock extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      SelectableText("Extracted:", style: bold),
+                                      SelectableText("Extracted", style: bold),
                                       const SizedBox(height: 4),
                                       buildBulletList(extracted),
                                     ],

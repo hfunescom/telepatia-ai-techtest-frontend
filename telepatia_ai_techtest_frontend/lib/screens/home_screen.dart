@@ -13,17 +13,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _textController = TextEditingController(
+  final _inputController = TextEditingController(
     text: "I'm feeling a bit unwell; my head hurts and I have a lot of mucus.",
   );
 
-  final _audioUrlController = TextEditingController();
   String? _audioFilename;
 
   @override
   void dispose() {
-    _textController.dispose();
-    _audioUrlController.dispose();
+    _inputController.dispose();
     super.dispose();
   }
 
@@ -77,8 +75,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<PipelineProvider>();
-    final audioUrl = _audioUrlController.text.trim();
-    final isAudioUrlValid = _isValidUrl(audioUrl);
+    final input = _inputController.text.trim();
+    final isUrl = _isValidUrl(input);
+    final looksLikeUrl =
+        input.startsWith('http://') || input.startsWith('https://');
 
     return Scaffold(
       appBar: AppBar(
@@ -108,80 +108,27 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Diagnosis from text",
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 12),
-                          TextField(
-                            controller: _textController,
-                            maxLines: 3,
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: 'Describe your symptoms (text)',
-                              hintText:
-                                  'E.g., My head hurts and I have a lot of mucus...',
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            height: 48,
-                            child: ElevatedButton.icon(
-                              onPressed: provider.isLoading
-                                  ? null
-                                  : () async {
-                                      FocusScope.of(context).unfocus();
-                                      final p =
-                                          context.read<PipelineProvider>();
-                                      await p.runFromText(
-                                        text: _textController.text,
-                                        language: _detectLanguage(
-                                          _textController.text,
-                                        ),
-                                        correlationId: p.nextCorrelationId(),
-                                      );
-                                    },
-                              icon: const Icon(Icons.medical_services),
-                              label: provider.isLoading
-                                  ? const Text("Processing…")
-                                  : const Text("Diagnose"),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 28),
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  Card(
-                    color: const Color(0xFF6884F3),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Diagnosis from audio (URL)",
+                            "Diagnosis",
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            "Paste the public link to your audio (.ogg, .mp3, .wav, etc.). "
-                            "We'll use the direct URL to transcribe and diagnose.",
+                            "Describe your symptoms or paste an audio URL (.ogg, .mp3, .wav...) and we'll transcribe and diagnose",
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           const SizedBox(height: 12),
                           TextField(
-                            controller: _audioUrlController,
+                            controller: _inputController,
+                            maxLines: 3,
                             decoration: InputDecoration(
                               border: const OutlineInputBorder(),
-                              labelText: 'Audio URL',
-                              hintText: 'https://.../my_audio.ogg',
-                              errorText: audioUrl.isEmpty || isAudioUrlValid
+                              labelText: 'Symptoms or audio URL',
+                              hintText:
+                                  'E.g., My head hurts and I have a lot of mucus... or https://.../my_audio.ogg',
+                              errorText: input.isEmpty || !looksLikeUrl || isUrl
                                   ? null
                                   : 'Enter a valid URL (http/https).',
-                              suffixIcon: audioUrl.isEmpty
+                              suffixIcon: input.isEmpty
                                   ? null
                                   : IconButton(
                                       tooltip: "Clear",
@@ -189,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ? null
                                           : () {
                                               setState(() {
-                                                _audioUrlController.clear();
+                                                _inputController.clear();
                                                 _audioFilename = null;
                                               });
                                             },
@@ -197,13 +144,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                             ),
                             onChanged: (_) {
-                              final inferred = _inferFilenameFromUrl(
-                                _audioUrlController.text,
-                              );
+                              final inferred =
+                                  _inferFilenameFromUrl(_inputController.text);
                               setState(() => _audioFilename = inferred);
                             },
                           ),
-                          if (_audioFilename != null) ...[
+                          if (_audioFilename != null && isUrl) ...[
                             const SizedBox(height: 8),
                             Text(
                               "Inferred name: ${_audioFilename!}",
@@ -214,30 +160,45 @@ class _HomeScreenState extends State<HomeScreen> {
                           SizedBox(
                             height: 48,
                             child: ElevatedButton.icon(
-                              onPressed: provider.isLoading || !isAudioUrlValid
+                              onPressed: provider.isLoading || input.isEmpty
                                   ? null
                                   : () async {
                                       FocusScope.of(context).unfocus();
                                       try {
-                                        await context
-                                            .read<PipelineProvider>()
-                                            .runFromAudioUrl(
-                                              url: audioUrl,
-                                              filename: _audioFilename,
-                                              language: _detectLanguage(
-                                                _textController.text,
-                                              ),
-                                              correlationId:
-                                                  provider.nextCorrelationId(),
-                                            );
+                                        if (isUrl) {
+                                          await context
+                                              .read<PipelineProvider>()
+                                              .runFromAudioUrl(
+                                                url: input,
+                                                filename: _audioFilename,
+                                                language: _detectLanguage(
+                                                  _inputController.text,
+                                                ),
+                                                correlationId:
+                                                    provider.nextCorrelationId(),
+                                              );
+                                        } else {
+                                          final p =
+                                              context.read<PipelineProvider>();
+                                          await p.runFromText(
+                                            text: input,
+                                            language: _detectLanguage(
+                                              _inputController.text,
+                                            ),
+                                            correlationId: p.nextCorrelationId(),
+                                          );
+                                        }
                                       } catch (e) {
-                                        _showSnack('Could not send audio: $e');
+                                        _showSnack(
+                                            'Could not send${isUrl ? ' audio' : ''}: $e');
                                       }
                                     },
-                              icon: const Icon(Icons.link),
+                              icon: isUrl
+                                  ? const Icon(Icons.link)
+                                  : const Icon(Icons.medical_services),
                               label: provider.isLoading
-                                  ? const Text("Processing audio…")
-                                  : const Text("Diagnose from URL"),
+                                  ? const Text("Processing…")
+                                  : const Text("Diagnose"),
                             ),
                           ),
                         ],

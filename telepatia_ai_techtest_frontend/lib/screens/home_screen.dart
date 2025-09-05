@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/pipeline_provider.dart';
+import '../utils/bullet_list.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -245,12 +246,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Theme.of(context).colorScheme.errorContainer,
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
-                        child: Text(
-                          provider.errorMessage ?? "Unknown error",
+                        child: DefaultTextStyle(
                           style: TextStyle(
-                            color:
-                                Theme.of(context).colorScheme.onErrorContainer,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onErrorContainer,
                           ),
+                          child: buildBulletList(
+                              provider.error ?? {"message": "Unknown error"}),
                         ),
                       ),
                     ),
@@ -357,7 +360,7 @@ class _ResultBlock extends StatelessWidget {
                                         style: bold,
                                       ),
                                       const SizedBox(height: 4),
-                                      SelectableText(pretty(timings)),
+                                      buildBulletList(timings),
                                     ],
                                   ),
                                 ),
@@ -396,7 +399,7 @@ class _ResultBlock extends StatelessWidget {
                                     children: [
                                       SelectableText("Extracted:", style: bold),
                                       const SizedBox(height: 4),
-                                      SelectableText(pretty(extracted)),
+                                      buildBulletList(extracted),
                                     ],
                                   ),
                                 ),

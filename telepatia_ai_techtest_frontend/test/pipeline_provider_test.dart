@@ -13,13 +13,13 @@ void main() {
     final provider = PipelineProvider.withDefaultApi();
     await provider.runFromText(text: '');
     expect(provider.isError, true);
-    expect(provider.errorMessage, 'El texto no puede estar vacío.');
+    expect(provider.error?["message"], 'Text cannot be empty.');
   });
 
   test('runFromAudioUrl with empty url sets error state', () async {
     final provider = PipelineProvider.withDefaultApi();
     await provider.runFromAudioUrl(url: '');
     expect(provider.isError, true);
-    expect(provider.errorMessage, 'La URL no puede estar vacía.');
+    expect(provider.error?["message"], 'URL cannot be empty.');
   });
 }

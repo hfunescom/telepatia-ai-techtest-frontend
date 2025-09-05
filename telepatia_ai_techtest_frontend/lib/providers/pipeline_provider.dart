@@ -11,7 +11,7 @@ class PipelineProvider extends ChangeNotifier {
   int _correlationCounter = 0;
 
   PipelineStatus _status = PipelineStatus.idle;
-  String? _errorMessage;
+  Map<String, dynamic>? _error;
 
   Map<String, dynamic>? _lastResponse;
 
@@ -19,7 +19,7 @@ class PipelineProvider extends ChangeNotifier {
     : _api = ApiClient(baseUrl: ApiConfig.baseUrl);
 
   PipelineStatus get status => _status;
-  String? get errorMessage => _errorMessage;
+  Map<String, dynamic>? get error => _error;
   Map<String, dynamic>? get lastResponse => _lastResponse;
 
   bool get isIdle => _status == PipelineStatus.idle;
@@ -38,7 +38,7 @@ class PipelineProvider extends ChangeNotifier {
     String? correlationId,
   }) async {
     if (text.trim().isEmpty) {
-      _setError("Text cannot be empty.");
+      _setError({"message": "Text cannot be empty."});
       return;
     }
     _setLoading();
@@ -51,11 +51,26 @@ class PipelineProvider extends ChangeNotifier {
 
       _setSuccess(res);
     } catch (e) {
-      _setError(e.toString());
+      if (e is ApiException) {
+        final Map<String, dynamic> details = {
+          "statusCode": e.statusCode,
+          "message": e.message,
+        };
+        if (e.body != null) {
+          try {
+            details["body"] = jsonDecode(e.body!);
+          } catch (_) {
+            details["body"] = e.body;
+          }
+        }
+        _setError(details);
+      } else {
+        _setError({"message": e.toString()});
+      }
     }
   }
 
-  /* BORRAR
+  /* TODO: remove
   Future<void> runFromAudioBase64({
     required String base64Audio,
     required String filename,
@@ -91,7 +106,7 @@ class PipelineProvider extends ChangeNotifier {
     String? correlationId,
   }) async {
     if (url.trim().isEmpty) {
-      _setError("URL cannot be empty.");
+      _setError({"message": "URL cannot be empty."});
       return;
     }
     _setLoading();
@@ -104,7 +119,22 @@ class PipelineProvider extends ChangeNotifier {
       );
       _setSuccess(res);
     } catch (e) {
-      _setError(e.toString());
+      if (e is ApiException) {
+        final Map<String, dynamic> details = {
+          "statusCode": e.statusCode,
+          "message": e.message,
+        };
+        if (e.body != null) {
+          try {
+            details["body"] = jsonDecode(e.body!);
+          } catch (_) {
+            details["body"] = e.body;
+          }
+        }
+        _setError(details);
+      } else {
+        _setError({"message": e.toString()});
+      }
     }
   }
 
@@ -123,20 +153,20 @@ class PipelineProvider extends ChangeNotifier {
 
   void _setLoading() {
     _status = PipelineStatus.loading;
-    _errorMessage = null;
+    _error = null;
     notifyListeners();
   }
 
   void _setSuccess(Map<String, dynamic> res) {
     _status = PipelineStatus.success;
     _lastResponse = res;
-    _errorMessage = null;
+    _error = null;
     notifyListeners();
   }
 
-  void _setError(String message) {
+  void _setError(Map<String, dynamic> data) {
     _status = PipelineStatus.error;
-    _errorMessage = message;
+    _error = data;
     notifyListeners();
   }
 

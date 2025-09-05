@@ -131,6 +131,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               border: const OutlineInputBorder(),
                               hintText:
                                   'E.g., My head hurts and I have a lot of mucus... or https://.../my_audio.ogg',
+                              hintStyle: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: const Color(0xFF808080),
+                                  ),
                               errorText: input.isEmpty || !looksLikeUrl || isUrl
                                   ? null
                                   : 'Enter a valid URL (http/https).',

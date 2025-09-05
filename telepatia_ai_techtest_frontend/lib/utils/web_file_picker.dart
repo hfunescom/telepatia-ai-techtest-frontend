@@ -1,5 +1,4 @@
-// lib/utils/web_file_picker.dart
-// File picker exclusive to Flutter Web (uses dart:html).
+/* BORRAR
 import 'dart:async';
 import 'dart:html' as html;
 import 'dart:math' as math;
@@ -101,3 +100,4 @@ String _fmtBytes(int bytes, [int decimals = 1]) {
   final p = bytes / math.pow(k, i);
   return "${p.toStringAsFixed(decimals)} ${sizes[i]}";
 }
+*/

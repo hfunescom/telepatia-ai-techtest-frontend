@@ -12,15 +12,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // State for TEXT → pipeline
   final _textController = TextEditingController(
-    text:
-        "I'm feeling a bit unwell; my head hurts and I have a lot of mucus.",
+    text: "I'm feeling a bit unwell; my head hurts and I have a lot of mucus.",
   );
 
-  // State for AUDIO → URL
   final _audioUrlController = TextEditingController();
-  String? _audioFilename; // optional, you can infer it from the URL
+  String? _audioFilename;
 
   @override
   void dispose() {
@@ -68,13 +65,11 @@ class _HomeScreenState extends State<HomeScreen> {
       'las',
       'un',
       'una',
-      'tengo'
+      'tengo',
     };
     const englishWords = {'the', 'and', 'is', 'are', 'to', 'have'};
-    final spanishCount =
-        words.where((w) => spanishWords.contains(w)).length;
-    final englishCount =
-        words.where((w) => englishWords.contains(w)).length;
+    final spanishCount = words.where((w) => spanishWords.contains(w)).length;
+    final englishCount = words.where((w) => englishWords.contains(w)).length;
     return spanishCount >= englishCount ? 'es-AR' : 'en';
   }
 
@@ -88,10 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            Image.asset(
-              'assets/images/telepatia_logo.png',
-              height: 32,
-            ),
+            Image.asset('assets/images/telepatia_logo.png', height: 32),
             const SizedBox(width: 8),
             const Text('Doctor Helper'),
           ],
@@ -102,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
           constraints: const BoxConstraints(maxWidth: 900),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            // Enable text selection on the entire screen:
+
             child: SelectionArea(
               child: ListView(
                 children: [
@@ -134,8 +126,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 final p = context.read<PipelineProvider>();
                                 await p.runFromText(
                                   text: _textController.text,
-                                  language:
-                                      _detectLanguage(_textController.text),
+                                  language: _detectLanguage(
+                                    _textController.text,
+                                  ),
                                   correlationId: p.nextCorrelationId(),
                                 );
                               },
@@ -147,9 +140,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-                  // ==========================
-                  // Section: Diagnosis from AUDIO (URL)
-                  // ==========================
                   const SizedBox(height: 28),
                   const Divider(),
                   const SizedBox(height: 8),
@@ -281,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Formats bytes into B/KB/MB/GB.
+  /* BORRAR
   String _formatBytes(int bytes, [int decimals = 1]) {
     if (bytes <= 0) return "0 B";
     const k = 1024;
@@ -290,6 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final p = bytes / math.pow(k, i);
     return "${p.toStringAsFixed(decimals)} ${sizes[i]}";
   }
+*/
 }
 
 class _ResultBlock extends StatelessWidget {
@@ -300,10 +291,9 @@ class _ResultBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Expected fields:
     final transcript = data["transcript"];
     final extracted = data["extracted"];
-    // Current backend uses "diagnosis"; tolerate "diagnose" for compatibility:
+
     final diagnosis =
         (data["diagnosis"] ?? data["diagnose"]) as Map<String, dynamic>?;
     final timings =
@@ -319,7 +309,6 @@ class _ResultBlock extends StatelessWidget {
         Text("Diagnosis", style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),
 
-        // ======= MAIN DIAGNOSIS BLOCK =======
         if (diagnosis != null) ...[
           Card(
             child: Padding(
@@ -330,7 +319,6 @@ class _ResultBlock extends StatelessWidget {
           const SizedBox(height: 8),
         ],
 
-        // ======= METRICS: Timing / Transcript / Extracted =======
         if (timings != null || transcript != null || extracted != null)
           Card(
             child: Padding(
@@ -338,13 +326,18 @@ class _ResultBlock extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Metrics", style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    "Metrics",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                   const SizedBox(height: 8),
                   LayoutBuilder(
                     builder: (context, constraints) {
                       final isWide = constraints.maxWidth >= 600;
                       final itemWidth =
-                          isWide ? (constraints.maxWidth - 24) / 3 : constraints.maxWidth;
+                          isWide
+                              ? (constraints.maxWidth - 24) / 3
+                              : constraints.maxWidth;
                       return Wrap(
                         spacing: 12,
                         runSpacing: 12,
@@ -356,9 +349,13 @@ class _ResultBlock extends StatelessWidget {
                                 child: Padding(
                                   padding: const EdgeInsets.all(12.0),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      SelectableText("Timing (ms):", style: bold),
+                                      SelectableText(
+                                        "Timing (ms):",
+                                        style: bold,
+                                      ),
                                       const SizedBox(height: 4),
                                       SelectableText(pretty(timings)),
                                     ],
@@ -373,9 +370,13 @@ class _ResultBlock extends StatelessWidget {
                                 child: Padding(
                                   padding: const EdgeInsets.all(12.0),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      SelectableText("Transcript:", style: bold),
+                                      SelectableText(
+                                        "Transcript:",
+                                        style: bold,
+                                      ),
                                       const SizedBox(height: 4),
                                       SelectableText(pretty(transcript)),
                                     ],
@@ -390,7 +391,8 @@ class _ResultBlock extends StatelessWidget {
                                 child: Padding(
                                   padding: const EdgeInsets.all(12.0),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       SelectableText("Extracted:", style: bold),
                                       const SizedBox(height: 4),
@@ -409,7 +411,6 @@ class _ResultBlock extends StatelessWidget {
             ),
           ),
 
-        // Fallback: if there's nothing recognizable, show everything:
         if (transcript == null && extracted == null && diagnosis == null) ...[
           Card(
             child: Padding(

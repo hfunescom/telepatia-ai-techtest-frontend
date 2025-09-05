@@ -14,9 +14,9 @@ class TelepatiaApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // Using the local backend for now. For production:
-        // ChangeNotifierProvider(create: (_) => PipelineProvider.prod("<your-project-id>")),
-        ChangeNotifierProvider(create: (_) => PipelineProvider.local()),
+        ChangeNotifierProvider(
+          create: (_) => PipelineProvider.withDefaultApi(),
+        ),
       ],
       child: MaterialApp(
         title: 'Telepatía AI',

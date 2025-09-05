@@ -1,18 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-/// Configuration for backend endpoints (Firebase Functions v2).
 class ApiConfig {
-  /// Local base URL for the emulator (adjust to match your backend).
-  static const String baseUrlLocal =
-      "http://127.0.0.1:5005/telepatia-ai-techtest-hfunes/us-central1";
-
-  /// Production base URL (replace <your-project> with your GCP projectId).
-  static const String baseUrlProd =
-      "https://us-central1-<your-project>.cloudfunctions.net";
+  static final String baseUrl =
+      '${String.fromEnvironment('API_BASE_URL')}/${String.fromEnvironment('FIREBASE_DEFAULT_REGION')}';
 }
 
-/// Simple HTTP client to communicate with the backend pipeline.
 class ApiClient {
   final String baseUrl;
   final http.Client _http;
@@ -20,17 +13,6 @@ class ApiClient {
   ApiClient({required this.baseUrl, http.Client? httpClient})
     : _http = httpClient ?? http.Client();
 
-  /// Calls the pipeline with plain text.
-  ///
-  /// POST {baseUrl}/pipeline
-  /// body:
-  /// {
-  ///   "input": {
-  ///     "text": "<text>",
-  ///     "language": "es-AR",
-  ///     "correlationId": "optional"
-  ///   }
-  /// }
   Future<Map<String, dynamic>> pipelineFromText({
     required String text,
     String language = "es-AR",
@@ -63,18 +45,7 @@ class ApiClient {
     return _decodeJson(res.body);
   }
 
-  /// Calls the pipeline with audio encoded in Base64.
-  ///
-  /// POST {baseUrl}/pipeline
-  /// body:
-  /// {
-  ///   "input": {
-  ///     "audio": {"type": "base64", "value": "<B64>"},
-  ///     "filename": "file.ogg",
-  ///     "language": "es-AR",
-  ///     "correlationId": "optional"
-  ///   }
-  /// }
+  /* Borrar
   Future<Map<String, dynamic>> pipelineFromAudioBase64({
     required String base64Audio,
     required String filename,
@@ -108,19 +79,7 @@ class ApiClient {
 
     return _decodeJson(res.body);
   }
-
-  /// NEW: Calls the pipeline with audio via public URL (mp3/ogg/wav, etc.)
-  ///
-  /// POST {baseUrl}/pipeline
-  /// body:
-  /// {
-  ///   "input": {
-  ///     "audio": {"type": "url", "value": "<URL>"},
-  ///     "filename": "optional",
-  ///     "language": "es-AR",
-  ///     "correlationId": "optional"
-  ///   }
-  /// }
+*/
   Future<Map<String, dynamic>> pipelineFromAudioUrl({
     required String url,
     String? filename,

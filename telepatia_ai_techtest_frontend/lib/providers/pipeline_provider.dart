@@ -13,15 +13,10 @@ class PipelineProvider extends ChangeNotifier {
   PipelineStatus _status = PipelineStatus.idle;
   String? _errorMessage;
 
-  /// Raw response from the backend (stored as a Map for easy display in the UI).
   Map<String, dynamic>? _lastResponse;
 
-  PipelineProvider.local() : _api = ApiClient(baseUrl: ApiConfig.baseUrlLocal);
-
-  PipelineProvider.prod(String projectId)
-    : _api = ApiClient(
-        baseUrl: "https://us-central1-$projectId.cloudfunctions.net",
-      );
+  PipelineProvider.withDefaultApi()
+    : _api = ApiClient(baseUrl: ApiConfig.baseUrl);
 
   PipelineStatus get status => _status;
   String? get errorMessage => _errorMessage;
@@ -37,7 +32,6 @@ class PipelineProvider extends ChangeNotifier {
     return 'ui-corr-${_correlationCounter.toString().padLeft(3, '0')}';
   }
 
-  /// Calls the pipeline with plain text.
   Future<void> runFromText({
     required String text,
     String language = "es-AR",
@@ -54,16 +48,14 @@ class PipelineProvider extends ChangeNotifier {
         language: language,
         correlationId: correlationId,
       );
-      // Useful logs in dev:
-      // print("API keys -> ${res.keys.toList()}");
-      // print("Diagnosis present? ${res['diagnosis'] != null}");
+
       _setSuccess(res);
     } catch (e) {
       _setError(e.toString());
     }
   }
 
-  /// Calls the pipeline with base64 audio (optional UI).
+  /* BORRAR
   Future<void> runFromAudioBase64({
     required String base64Audio,
     required String filename,
@@ -91,8 +83,7 @@ class PipelineProvider extends ChangeNotifier {
       _setError(e.toString());
     }
   }
-
-  /// NEW: Calls the pipeline with audio via public URL (mp3/ogg/wav, etc.)
+*/
   Future<void> runFromAudioUrl({
     required String url,
     String? filename,
@@ -117,7 +108,6 @@ class PipelineProvider extends ChangeNotifier {
     }
   }
 
-  /// Helper to pretty-format any Map/JSON in the UI.
   String prettyJson([Object? data]) {
     try {
       if (data == null) return "{}";

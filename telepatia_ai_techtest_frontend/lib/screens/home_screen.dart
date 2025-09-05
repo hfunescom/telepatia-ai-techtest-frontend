@@ -124,15 +124,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 .copyWith(color: Colors.white),
                           ),
                           const SizedBox(height: 12),
-                          const Text(
-                            'Symptoms or Audio URL',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          const SizedBox(height: 12),
                           TextField(
                             controller: _inputController,
                             maxLines: 3,
                             decoration: InputDecoration(
+                              labelText: 'Symptoms or Audio URL',
+                              alignLabelWithHint: true,
                               border: const OutlineInputBorder(),
                               hintText:
                                   'E.g., My head hurts and I have a lot of mucus... or https://.../my_audio.ogg',

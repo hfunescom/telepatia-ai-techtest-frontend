@@ -52,41 +52,6 @@ class ApiClient {
     return _decodeJson(res.body);
   }
 
-  /* Borrar
-  Future<Map<String, dynamic>> pipelineFromAudioBase64({
-    required String base64Audio,
-    required String filename,
-    String language = "es-AR",
-    String? correlationId,
-  }) async {
-    final uri = Uri.parse("$baseUrl/pipeline");
-    final payload = <String, dynamic>{
-      "input": {
-        "audio": {"type": "base64", "value": base64Audio},
-        "filename": filename,
-        "language": language,
-        if (correlationId != null) "correlationId": correlationId,
-      },
-    };
-
-    final res = await _http.post(
-      uri,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode(payload),
-    );
-
-    if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw ApiException(
-        message:
-            "Error ${res.statusCode} calling pipelineFromAudioBase64: ${res.body}",
-        statusCode: res.statusCode,
-        body: res.body,
-      );
-    }
-
-    return _decodeJson(res.body);
-  }
-*/
   Future<Map<String, dynamic>> pipelineFromAudioUrl({
     required String url,
     String? filename,

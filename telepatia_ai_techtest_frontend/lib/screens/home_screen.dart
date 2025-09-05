@@ -107,20 +107,17 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Text(
                             "Diagnosis",
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge!
-                                .copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleLarge!.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(height: 12),
                           Text(
                             "Describe your symptoms or paste an audio URL (.ogg, .mp3, .wav...) and we'll transcribe and diagnose",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium!
+                            style: Theme.of(context).textTheme.bodyMedium!
                                 .copyWith(color: Colors.white),
                           ),
                           const SizedBox(height: 12),
@@ -131,35 +128,35 @@ class _HomeScreenState extends State<HomeScreen> {
                               border: const OutlineInputBorder(),
                               hintText:
                                   'E.g., My head hurts and I have a lot of mucus... or https://.../my_audio.ogg',
-                              hintStyle: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    color: const Color(0xFF808080),
-                                  ),
-                              errorText: input.isEmpty || !looksLikeUrl || isUrl
-                                  ? null
-                                  : 'Enter a valid URL (http/https).',
-                              suffixIcon: input.isEmpty
-                                  ? null
-                                  : IconButton(
-                                      tooltip: "Clear",
-                                      onPressed: provider.isLoading
-                                          ? null
-                                          : () {
-                                              setState(() {
-                                                _inputController.clear();
-                                                _audioFilename = null;
-                                              });
-                                            },
-                                      icon: const Icon(Icons.clear),
-                                    ),
+                              hintStyle: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: const Color(0xFF808080)),
+                              errorText:
+                                  input.isEmpty || !looksLikeUrl || isUrl
+                                      ? null
+                                      : 'Enter a valid URL (http/https).',
+                              suffixIcon:
+                                  input.isEmpty
+                                      ? null
+                                      : IconButton(
+                                        tooltip: "Clear",
+                                        onPressed:
+                                            provider.isLoading
+                                                ? null
+                                                : () {
+                                                  setState(() {
+                                                    _inputController.clear();
+                                                    _audioFilename = null;
+                                                  });
+                                                },
+                                        icon: const Icon(Icons.clear),
+                                      ),
                               filled: true,
                               fillColor: Colors.white,
                             ),
                             onChanged: (_) {
-                              final inferred =
-                                  _inferFilenameFromUrl(_inputController.text);
+                              final inferred = _inferFilenameFromUrl(
+                                _inputController.text,
+                              );
                               setState(() => _audioFilename = inferred);
                             },
                           ),
@@ -177,50 +174,59 @@ class _HomeScreenState extends State<HomeScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFE5E6F7),
                                 foregroundColor: const Color(0xFF6884F3),
-                                disabledBackgroundColor:
-                                    const Color(0xFFE0E0E0),
-                                disabledForegroundColor:
-                                    const Color(0xFF808080),
+                                disabledBackgroundColor: const Color(
+                                  0xFFE0E0E0,
+                                ),
+                                disabledForegroundColor: const Color(
+                                  0xFF808080,
+                                ),
                               ),
-                              onPressed: provider.isLoading || input.isEmpty
-                                  ? null
-                                  : () async {
-                                      FocusScope.of(context).unfocus();
-                                      try {
-                                        if (isUrl) {
-                                          await context
-                                              .read<PipelineProvider>()
-                                              .runFromAudioUrl(
-                                                url: input,
-                                                filename: _audioFilename,
-                                                language: _detectLanguage(
-                                                  _inputController.text,
-                                                ),
-                                                correlationId:
-                                                    provider.nextCorrelationId(),
-                                              );
-                                        } else {
-                                          final p =
-                                              context.read<PipelineProvider>();
-                                          await p.runFromText(
-                                            text: input,
-                                            language: _detectLanguage(
-                                              _inputController.text,
-                                            ),
-                                            correlationId: p.nextCorrelationId(),
+                              onPressed:
+                                  provider.isLoading || input.isEmpty
+                                      ? null
+                                      : () async {
+                                        FocusScope.of(context).unfocus();
+                                        try {
+                                          if (isUrl) {
+                                            await context
+                                                .read<PipelineProvider>()
+                                                .runFromAudioUrl(
+                                                  url: input,
+                                                  filename: _audioFilename,
+                                                  language: _detectLanguage(
+                                                    _inputController.text,
+                                                  ),
+                                                  correlationId:
+                                                      provider
+                                                          .nextCorrelationId(),
+                                                );
+                                          } else {
+                                            final p =
+                                                context
+                                                    .read<PipelineProvider>();
+                                            await p.runFromText(
+                                              text: input,
+                                              language: _detectLanguage(
+                                                _inputController.text,
+                                              ),
+                                              correlationId:
+                                                  p.nextCorrelationId(),
+                                            );
+                                          }
+                                        } catch (e) {
+                                          _showSnack(
+                                            'Could not send${isUrl ? ' audio' : ''}: $e',
                                           );
                                         }
-                                      } catch (e) {
-                                        _showSnack(
-                                            'Could not send${isUrl ? ' audio' : ''}: $e');
-                                      }
-                                    },
-                              icon: isUrl
-                                  ? const Icon(Icons.link)
-                                  : const Icon(Icons.medical_services),
-                              label: provider.isLoading
-                                  ? const Text("Processing…")
-                                  : const Text("Diagnose"),
+                                      },
+                              icon:
+                                  isUrl
+                                      ? const Icon(Icons.link)
+                                      : const Icon(Icons.medical_services),
+                              label:
+                                  provider.isLoading
+                                      ? const Text("Processing…")
+                                      : const Text("Diagnose"),
                             ),
                           ),
                         ],
@@ -244,12 +250,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: const EdgeInsets.all(12.0),
                         child: DefaultTextStyle(
                           style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onErrorContainer,
+                            color:
+                                Theme.of(context).colorScheme.onErrorContainer,
                           ),
                           child: buildBulletList(
-                              provider.error ?? {"message": "Unknown error"}),
+                            provider.error ?? {"message": "Unknown error"},
+                          ),
                         ),
                       ),
                     ),
@@ -269,17 +275,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
-  /* BORRAR
-  String _formatBytes(int bytes, [int decimals = 1]) {
-    if (bytes <= 0) return "0 B";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB", "TB"];
-    final i = (math.log(bytes) / math.log(k)).floor();
-    final p = bytes / math.pow(k, i);
-    return "${p.toStringAsFixed(decimals)} ${sizes[i]}";
-  }
-*/
 }
 
 class _ResultBlock extends StatelessWidget {
@@ -315,13 +310,10 @@ class _ResultBlock extends StatelessWidget {
                 children: [
                   Text(
                     "Results",
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleLarge!
-                        .copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   _DiagnosisView(diagnosis: diagnosis),
@@ -342,21 +334,19 @@ class _ResultBlock extends StatelessWidget {
                 children: [
                   Text(
                     "Metrics",
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleLarge!
-                        .copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   LayoutBuilder(
                     builder: (context, constraints) {
                       final isWide = constraints.maxWidth >= 600;
-                      final itemWidth = isWide
-                          ? (constraints.maxWidth - 24) / 3
-                          : constraints.maxWidth;
+                      final itemWidth =
+                          isWide
+                              ? (constraints.maxWidth - 24) / 3
+                              : constraints.maxWidth;
                       return Wrap(
                         spacing: 12,
                         runSpacing: 12,
@@ -394,10 +384,7 @@ class _ResultBlock extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      SelectableText(
-                                        "Transcript",
-                                        style: bold,
-                                      ),
+                                      SelectableText("Transcript", style: bold),
                                       const SizedBox(height: 4),
                                       SelectableText(pretty(transcript)),
                                     ],

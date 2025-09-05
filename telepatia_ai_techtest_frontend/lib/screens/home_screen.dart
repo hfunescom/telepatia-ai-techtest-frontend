@@ -172,9 +172,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 backgroundColor: const Color(0xFFE5E6F7),
                                 foregroundColor: const Color(0xFF6884F3),
                                 disabledBackgroundColor:
-                                    const Color(0xFFE5E6F7),
+                                    const Color(0xFFE0E0E0),
                                 disabledForegroundColor:
-                                    const Color(0xFF6884F3),
+                                    const Color(0xFF808080),
                               ),
                               onPressed: provider.isLoading || input.isEmpty
                                   ? null

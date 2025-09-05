@@ -1,6 +1,6 @@
 # Telepatía AI Tech Test Frontend
 
-Small Flutter web application to interact with the Telepatía AI pipeline.
+Small Flutter web application to interact with the Telepatía AI backend pipeline.
 
 ## Requirements
 
@@ -15,8 +15,8 @@ Small Flutter web application to interact with the Telepatía AI pipeline.
    ```
 2. Edit `telepatia_ai_techtest_frontend/.env` and fill in the required values:
    ```bash
-   API_BASE_URL=http://127.0.0.1:5005/telepatia-ai-techtest-hfunes/us-central1
-   PROJECT_ID=<your-project-id>
+   API_BASE_URL=http://127.0.0.1:5005/telepatia-ai-techtest-hfunes
+   FIREBASE_DEFAULT_REGIION=us-central1
    ```
 3. Load the variables before running the app:
    ```bash

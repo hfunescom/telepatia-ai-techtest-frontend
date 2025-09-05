@@ -2,8 +2,16 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiConfig {
-  static final String baseUrl =
-      '${String.fromEnvironment('API_BASE_URL')}/${String.fromEnvironment('FIREBASE_DEFAULT_REGION')}';
+  static const String apiBase = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://127.0.0.1:5005/telepatia-ai-techtest-hfunes',
+  );
+  static const String region = String.fromEnvironment(
+    'FIREBASE_DEFAULT_REGION',
+    defaultValue: 'us-central1',
+  );
+
+  static const String baseUrl = '$apiBase/$region';
 }
 
 class ApiClient {

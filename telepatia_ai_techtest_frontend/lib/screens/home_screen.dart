@@ -176,6 +176,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFE5E6F7),
                                 foregroundColor: const Color(0xFF6884F3),
+                                disabledBackgroundColor:
+                                    const Color(0xFFE5E6F7),
+                                disabledForegroundColor:
+                                    const Color(0xFF6884F3),
                               ),
                               onPressed: provider.isLoading || input.isEmpty
                                   ? null

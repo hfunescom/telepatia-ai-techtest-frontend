@@ -32,3 +32,11 @@ Inside the `telepatia_ai_techtest_frontend` folder run:
 ```
 The script will install dependencies and launch the application in Chrome.
 
+## Test run
+
+To execute the Flutter test suite, navigate to the `telepatia_ai_techtest_frontend` directory and run:
+
+```bash
+flutter test
+```
+

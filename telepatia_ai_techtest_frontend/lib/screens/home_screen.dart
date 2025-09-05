@@ -82,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            Image.asset('assets/images/telepatia_logo.png', height: 32),
+            Image.asset('assets/images/telepatia_logo.png', width: 120),
             const SizedBox(width: 8),
             const Text('Doctor Helper'),
           ],

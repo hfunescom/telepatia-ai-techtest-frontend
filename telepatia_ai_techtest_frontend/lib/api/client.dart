@@ -43,8 +43,7 @@ class ApiClient {
 
     if (res.statusCode < 200 || res.statusCode >= 300) {
       throw ApiException(
-        message:
-            "Error ${res.statusCode} calling pipelineFromText: ${res.body}",
+        message: "Error ${res.statusCode} calling text pipeline: ${res.body}",
         statusCode: res.statusCode,
         body: res.body,
       );
@@ -112,8 +111,7 @@ class ApiClient {
 
     if (res.statusCode < 200 || res.statusCode >= 300) {
       throw ApiException(
-        message:
-            "Error ${res.statusCode} calling pipelineFromAudioUrl: ${res.body}",
+        message: "Error ${res.statusCode} calling audio pipeline: ${res.body}",
         statusCode: res.statusCode,
         body: res.body,
       );
@@ -122,7 +120,6 @@ class ApiClient {
     return _decodeJson(res.body);
   }
 
-  /// Closes the HTTP client (use this if you create/discard instances dynamically).
   void dispose() {
     _http.close();
   }
@@ -140,7 +137,6 @@ class ApiClient {
   }
 }
 
-/// Simple exception for API errors.
 class ApiException implements Exception {
   final String message;
   final int? statusCode;

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../api/client.dart';
 
-/// Simple provider states to manage the call lifecycle.
 enum PipelineStatus { idle, loading, success, error }
 
 class PipelineProvider extends ChangeNotifier {
